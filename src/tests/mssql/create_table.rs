@@ -95,3 +95,55 @@ fn rename_table() {
         String::from("EXEC sp_rename 'users', 'cool_users';")
     );
 }
+
+#[test]
+fn unique_constraint() {
+    let mut m = Migration::new();
+    m.create_table("users", |t: &mut Table| {
+        t.add_column("id", types::integer().nullable(false));
+        t.add_constraint("id_uniq", types::unique_constraint(&["id"]));
+    });
+
+    assert_eq!(
+        m.make::<MsSql>(),
+        String::from(
+            "CREATE TABLE [users] ([id] INT NOT NULL, CONSTRAINT [id_uniq] UNIQUE ([id]));"
+        )
+    );
+}
+
+#[test]
+fn primary_key_constraint() {
+    let mut m = Migration::new();
+    m.create_table("users", |t: &mut Table| {
+        t.add_column("id", types::integer().nullable(false));
+        t.add_constraint("id_pk", types::primary_constraint(&["id"]));
+    });
+
+    assert_eq!(
+        m.make::<MsSql>(),
+        String::from(
+            "CREATE TABLE [users] ([id] INT NOT NULL, CONSTRAINT [id_pk] PRIMARY KEY ([id]));"
+        )
+    );
+}
+
+#[test]
+fn foreign_key_constraint() {
+    let mut m = Migration::new();
+    m.create_table("users", |t: &mut Table| {
+        t.add_column("id", types::integer().nullable(false));
+        t.add_column("planet_id", types::integer());
+        t.add_constraint(
+            "id_fk",
+            types::foreign_constraint(&["planet_id"], "planets", &["id"], None, None),
+        );
+    });
+
+    assert_eq!(
+        m.make::<MsSql>(),
+        String::from(
+            r#"CREATE TABLE [users] ([id] INT NOT NULL, [planet_id] INT NOT NULL, CONSTRAINT [id_fk] FOREIGN KEY ([planet_id]) REFERENCES [planets]([id]));"#
+        )
+    );
+}
