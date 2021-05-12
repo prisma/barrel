@@ -1,7 +1,7 @@
 //! Builder API's module
 
-use super::impls::Constraint;
 use super::impls::{BaseType, WrapVec};
+use super::impls::{Constraint, ReferentialAction};
 use crate::types::Type;
 
 /// A standard primary numeric key type
@@ -148,4 +148,41 @@ where
 {
     let vec: Vec<String> = columns.into_iter().map(|s| s.to_string()).collect();
     Type::new(BaseType::Constraint(Constraint::Unique, vec))
+}
+
+/// Create a primary key over multiple, existing columns of the same type
+pub fn primary_constraint<I, S>(columns: I) -> Type
+where
+    S: ToString,
+    I: IntoIterator<Item = S>,
+{
+    let vec: Vec<String> = columns.into_iter().map(|s| s.to_string()).collect();
+    Type::new(BaseType::Constraint(Constraint::PrimaryKey, vec))
+}
+
+/// Create a constraint that points to some foreign table
+pub fn foreign_constraint<C, A, T>(
+    columns: T,
+    table: A,
+    foreign_columns: T,
+    on_delete: Option<ReferentialAction>,
+    on_update: Option<ReferentialAction>,
+) -> Type
+where
+    C: ToString,
+    A: ToString,
+    T: IntoIterator<Item = C>,
+{
+    let columns: Vec<String> = columns.into_iter().map(|s| s.to_string()).collect();
+    let table = table.to_string();
+    let foreign_columns: Vec<String> = foreign_columns.into_iter().map(|s| s.to_string()).collect();
+
+    let constraint = Constraint::ForeignKey {
+        table,
+        foreign_columns,
+        on_delete,
+        on_update,
+    };
+
+    Type::new(BaseType::Constraint(constraint, columns))
 }

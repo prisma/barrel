@@ -3,7 +3,7 @@
 use super::SqlGenerator;
 use crate::{
     functions::AutogenFunction,
-    types::{BaseType, Type, WrappedDefault},
+    types::{BaseType, Constraint, Type, WrappedDefault},
 };
 
 /// A simple macro that will generate a schema prefix if it exists
@@ -127,23 +127,58 @@ impl SqlGenerator for Sqlite {
     }
 
     fn create_constraint(name: &str, _type: &Type) -> String {
-        let (r#type, columns) = match _type.inner {
-            BaseType::Constraint(ref r#type, ref columns) => (
-                r#type.clone(),
-                columns
+        let (r#type, columns, suffix) = match _type.inner {
+            BaseType::Constraint(ref r#type, ref columns) => {
+                let suffix = match r#type {
+                    Constraint::ForeignKey {
+                        table,
+                        foreign_columns,
+                        on_delete,
+                        on_update,
+                    } => {
+                        let foreign_columns: Vec<_> = foreign_columns
+                            .iter()
+                            .map(|col| format!(r#""{}""#, col))
+                            .collect();
+
+                        let mut suffix =
+                            format!(r#" REFERENCES "{}"({})"#, table, foreign_columns.join(", "),);
+
+                        if let Some(on_delete) = on_delete {
+                            suffix.push_str(&format!(" ON DELETE {}", on_delete));
+                        }
+
+                        if let Some(on_update) = on_update {
+                            suffix.push_str(&format!(" ON UPDATE {}", on_update));
+                        }
+
+                        Some(suffix)
+                    }
+                    _ => None,
+                };
+
+                let columns = columns
                     .iter()
                     .map(|col| format!("\"{}\"", col))
-                    .collect::<Vec<_>>(),
-            ),
+                    .collect::<Vec<_>>();
+
+                (r#type.clone(), columns, suffix)
+            }
             _ => unreachable!(),
         };
 
-        format!(
+        let mut sql = format!(
             "CONSTRAINT \"{}\" {} ({})",
             name,
             r#type,
             columns.join(", "),
-        )
+        );
+
+        if let Some(suffix) = suffix {
+            sql.push_str(&suffix);
+        }
+
+        sql
     }
 
     /// Drop a multi-column index

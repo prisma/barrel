@@ -1,6 +1,6 @@
 //! Implementation specifics for the type system
 
-use std::fmt;
+use std::fmt::{self, Display};
 
 use super::WrappedDefault;
 
@@ -11,12 +11,63 @@ pub struct WrapVec<T>(pub Vec<T>);
 #[derive(PartialEq, Debug, Clone)]
 pub enum Constraint {
     Unique,
+    PrimaryKey,
+    ForeignKey {
+        table: String,
+        foreign_columns: Vec<String>,
+        on_delete: Option<ReferentialAction>,
+        on_update: Option<ReferentialAction>,
+    },
 }
 
 impl fmt::Display for Constraint {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Unique => write!(f, "UNIQUE"),
+            Self::PrimaryKey => write!(f, "PRIMARY KEY"),
+            Self::ForeignKey { .. } => write!(f, "FOREIGN KEY"),
+        }
+    }
+}
+
+// The ON DELETE clause specifies the action to perform when a referenced row in
+// the referenced table is being deleted. Likewise, the ON UPDATE clause
+// specifies the action to perform when a referenced column in the referenced
+// table is being updated to a new value. If the row is updated, but the
+// referenced column is not actually changed, no action is done. Referential
+// actions other than the NO ACTION check cannot be deferred, even if the
+// constraint is declared deferrable.
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum ReferentialAction {
+    // Delete any rows referencing the deleted row, or update the values of the
+    // referencing column(s) to the new values of the referenced columns,
+    // respectively.
+    Cascade,
+    // Produce an error indicating that the deletion or update would create a
+    // foreign key constraint violation. If the constraint is deferred, this
+    // error will be produced at constraint check time if there still exist any
+    // referencing rows. This is the default action.
+    NoAction,
+    // Produce an error indicating that the deletion or update would create a
+    // foreign key constraint violation. This is the same as NO ACTION except
+    // that the check is not deferrable.
+    Restrict,
+    // Set the referencing column(s) to null.
+    SetNull,
+    // Set the referencing column(s) to their default values. (There must be a
+    // row in the referenced table matching the default values, if they are not
+    // null, or the operation will fail.)
+    SetDefault,
+}
+
+impl Display for ReferentialAction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ReferentialAction::Cascade => write!(f, "CASCADE"),
+            ReferentialAction::NoAction => write!(f, "NO ACTION"),
+            ReferentialAction::Restrict => write!(f, "RESTRICT"),
+            ReferentialAction::SetNull => write!(f, "SET NULL"),
+            ReferentialAction::SetDefault => write!(f, "SET DEFAULT"),
         }
     }
 }
@@ -92,7 +143,7 @@ pub enum BaseType {
 ///
 /// ## Examples
 ///
-/// ```rust,norun
+/// ```rust,no_run
 /// extern crate barrel;
 /// use barrel::types::*;
 ///
