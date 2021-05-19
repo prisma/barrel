@@ -95,7 +95,7 @@ fn auto_increment() {
     assert_eq!(
         m.make::<Sqlite>(),
         String::from(
-            r#"CREATE TABLE "users" ("id" INTEGER AUTOINCREMENT NOT NULL, PRIMARY KEY ("id"));"#
+            r#"CREATE TABLE "users" ("id" INTEGER NOT NULL, PRIMARY KEY ("id"));"#
         )
     );
 }
