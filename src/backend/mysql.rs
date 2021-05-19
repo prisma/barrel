@@ -53,7 +53,7 @@ impl SqlGenerator for MySql {
 
         #[cfg_attr(rustfmt, rustfmt_skip)] /* This shouldn't be formatted. It's too long */
         format!(
-            "{}{}{}{}{}",
+            "{}{}{}{}{}{}",
             match bt {
                 Text => format!("{}{} {}", MySql::prefix(ex), name, MySql::print_type(bt, schema)),
                 Varchar(_) => format!("{}{} {}", MySql::prefix(ex), name, MySql::print_type(bt, schema)),
@@ -75,6 +75,10 @@ impl SqlGenerator for MySql {
                 Array(it) => format!("{}{} {}", MySql::prefix(ex), name, MySql::print_type(Array(Box::new(*it)), schema)),
                 Index(_) => unreachable!("Indices are handled via custom builder"),
                 Constraint(_, _) => unreachable!("Constraints are handled via custom builder"),
+            },
+            match tt.increments {
+                true => " AUTO_INCREMENT",
+                false => "",
             },
             match tt.primary {
                 true => " PRIMARY KEY",

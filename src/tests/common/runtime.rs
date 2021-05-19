@@ -16,4 +16,5 @@ fn generate_from() {
     let _ = m.make_from(SqlVariant::Pg);
     let _ = m.make_from(SqlVariant::Mysql);
     let _ = m.make_from(SqlVariant::Sqlite);
+    let _ = m.make_from(SqlVariant::Mssql);
 }
