@@ -83,3 +83,19 @@ fn foreign_key_constraint() {
         )
     );
 }
+
+#[test]
+fn auto_increment() {
+    let mut m = Migration::new();
+    m.create_table("users", |t: &mut Table| {
+        t.add_column("id", types::integer().increments(true).nullable(false));
+       t.set_primary_key(&["id"])
+    });
+
+    assert_eq!(
+        m.make::<Sqlite>(),
+        String::from(
+            r#"CREATE TABLE "users" ("id" INTEGER AUTOINCREMENT NOT NULL, PRIMARY KEY ("id"));"#
+        )
+    );
+}

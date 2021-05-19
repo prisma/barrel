@@ -105,6 +105,11 @@ impl SqlGenerator for MsSql {
             ),
         };
 
+        let increment = match tt.increments {
+            true => " IDENTITY(1,1)",
+            false => "",
+        };
+
         let primary_key_indicator = match tt.primary {
             true => " PRIMARY KEY",
             false => "",
@@ -126,9 +131,11 @@ impl SqlGenerator for MsSql {
         };
 
         format!(
-            "{}{}{}{}{}",
+            "{}{}{}{}{}{}",
             // `ADD name VARCHAR(max)` or `name VARCHAR(max)`
             name_and_type,
+            // `IDENTITY(1,1)` or nothing
+            increment,
             // `PRIMARY KEY` or nothing
             primary_key_indicator,
             // `DEFAULT 'foo'` or nothing

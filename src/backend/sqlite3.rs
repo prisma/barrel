@@ -51,7 +51,7 @@ impl SqlGenerator for Sqlite {
         #[cfg_attr(rustfmt, rustfmt_skip)] /* This shouldn't be formatted. It's too long */
         format!(
             // SQL base - default - nullable - unique
-            "{}{}{}{}{}",
+            "{}{}{}{}{}{}",
             match bt {
                 Text => format!("{}\"{}\" {}", Sqlite::prefix(ex), name, Sqlite::print_type(bt)),
                 Varchar(_) => format!("{}\"{}\" {}", Sqlite::prefix(ex), name, Sqlite::print_type(bt)),
@@ -78,6 +78,11 @@ impl SqlGenerator for Sqlite {
                 true => " PRIMARY KEY",
                 false => "",
             },
+            match tt.increments {
+                true => " AUTOINCREMENT",
+                false => "",
+            },
+
             match (&tt.default).as_ref() {
                 Some(ref m) => match m {
                     WrappedDefault::Function(ref fun) => match fun {

@@ -61,6 +61,7 @@ impl SqlGenerator for Pg {
                 Varchar(_) => format!("{}\"{}\" {}", Pg::prefix(ex), name, Pg::print_type(bt, schema)),
                 Char(_) => format!("{}\"{}\" {}", Pg::prefix(ex), name, Pg::print_type(bt, schema)),
                 Primary => format!("{}\"{}\" {}", Pg::prefix(ex), name, Pg::print_type(bt, schema)),
+                Integer if tt.increments => format!("{}\"{}\" {}", Pg::prefix(ex), name, Pg::print_type(Serial, schema)),
                 Integer => format!("{}\"{}\" {}", Pg::prefix(ex), name, Pg::print_type(bt, schema)),
                 Serial => format!("{}\"{}\" {}", Pg::prefix(ex), name, Pg::print_type(bt, schema)),
                 Float => format!("{}\"{}\" {}", Pg::prefix(ex), name, Pg::print_type(bt, schema)),

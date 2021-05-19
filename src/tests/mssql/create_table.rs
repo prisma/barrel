@@ -147,3 +147,18 @@ fn foreign_key_constraint() {
         )
     );
 }
+
+#[test]
+fn auto_increment() {
+    let mut m = Migration::new();
+    m.create_table("users", |t: &mut Table| {
+        t.add_column("id", types::integer().increments(true).primary(true));
+    });
+
+    assert_eq!(
+        m.make::<MsSql>(),
+        String::from(
+            r#"CREATE TABLE [users] ([id] INT IDENTITY(1,1) PRIMARY KEY NOT NULL);"#
+        )
+    );
+}
