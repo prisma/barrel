@@ -177,7 +177,7 @@ impl SqlGenerator for MsSql {
         )
     }
 
-    fn create_constraint(name: &str, _type: &Type) -> String {
+    fn create_constraint(name: &str, _type: &Type, schema: Option<&str>) -> String {
         let (r#type, columns, suffix) = match _type.inner {
             BaseType::Constraint(ref r#type, ref columns) => {
                 let suffix = match r#type {
@@ -192,8 +192,9 @@ impl SqlGenerator for MsSql {
                             .map(|col| format!("[{}]", col))
                             .collect();
 
+
                         let mut suffix =
-                            format!(" REFERENCES [{}]({})", table, foreign_columns.join(", "),);
+                            format!(" REFERENCES {}[{}]({})",prefix!(schema), table, foreign_columns.join(", "),);
 
                         if let Some(on_delete) = on_delete {
                             suffix.push_str(&format!(" ON DELETE {}", on_delete));

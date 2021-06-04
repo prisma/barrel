@@ -243,7 +243,7 @@ impl Table {
             .constraints
             .iter()
             .map(|c| match c {
-                CC::AddConstraint { index, columns } => T::create_constraint(index, columns),
+                CC::AddConstraint { index, columns } => T::create_constraint(index, columns, schema),
             })
             .collect();
 

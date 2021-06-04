@@ -95,7 +95,7 @@ pub trait SqlGenerator {
     fn create_index(table: &str, schema: Option<&str>, name: &str, _type: &Type) -> String;
 
     /// Create a constraint
-    fn create_constraint(name: &str, _type: &Type) -> String;
+    fn create_constraint(name: &str, _type: &Type, schema: Option<&str>) -> String;
 
     /// Create a multi-column index
     fn create_partial_index(

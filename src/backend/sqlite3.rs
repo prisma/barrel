@@ -127,7 +127,7 @@ impl SqlGenerator for Sqlite {
         )
     }
 
-    fn create_constraint(name: &str, _type: &Type) -> String {
+    fn create_constraint(name: &str, _type: &Type, _schema: Option<&str>) -> String {
         let (r#type, columns, suffix) = match _type.inner {
             BaseType::Constraint(ref r#type, ref columns) => {
                 let suffix = match r#type {

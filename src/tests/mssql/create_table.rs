@@ -131,7 +131,8 @@ fn primary_key_constraint() {
 #[test]
 fn foreign_key_constraint() {
     let mut m = Migration::new();
-    m.create_table("users", |t: &mut Table| {
+    let mut with_schema = m.schema("test");
+    with_schema.create_table("users", |t: &mut Table| {
         t.add_column("id", types::integer().nullable(false));
         t.add_column("planet_id", types::integer());
         t.add_constraint(
@@ -141,9 +142,9 @@ fn foreign_key_constraint() {
     });
 
     assert_eq!(
-        m.make::<MsSql>(),
+        with_schema.make::<MsSql>(),
         String::from(
-            r#"CREATE TABLE [users] ([id] INT NOT NULL, [planet_id] INT NOT NULL, CONSTRAINT [id_fk] FOREIGN KEY ([planet_id]) REFERENCES [planets]([id]));"#
+            r#"CREATE TABLE [test].[users] ([id] INT NOT NULL, [planet_id] INT NOT NULL, CONSTRAINT [id_fk] FOREIGN KEY ([planet_id]) REFERENCES test.[planets]([id]));"#
         )
     );
 }
