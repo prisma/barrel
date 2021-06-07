@@ -167,6 +167,20 @@ impl Migration {
                         sql.push_str(";");
                         sql.push_str(&sql_changes.indices.join(";"));
                     }
+
+                    let l = sql_changes.constraints.len();
+                    for (i, slice) in sql_changes.constraints.iter().enumerate() {
+                        if sql_changes.columns.len() > 0 && i == 0 {
+                            sql.push_str(", ")
+                        }
+
+                        sql.push_str("ADD ");
+                        sql.push_str(slice);
+
+                        if i < l - 1 {
+                            sql.push_str(", ")
+                        }
+                    }
                 }
                 &mut CustomLine(ref raw_sql) => {
                     sql.push_str(raw_sql);

@@ -196,3 +196,18 @@ fn auto_increment() {
         )
     );
 }
+
+#[test]
+fn alter_table_add_constraint() {
+    let mut m = Migration::new();
+    m.change_table("users", |t: &mut Table| {
+        t.add_constraint("ForeignKey", types::foreign_constraint(&["one"], "Other", &["id"],  None, None));
+    });
+
+    assert_eq!(
+        m.make::<Pg>(),
+        String::from(
+            r#"ALTER TABLE "users" ADD CONSTRAINT "ForeignKey" FOREIGN KEY ("one") REFERENCES "Other"("id");"#
+        )
+    );
+}
